@@ -4,9 +4,14 @@ from sys import argv
 def matrix_error_handler(f):
     def wrapper(*args,**kwargs):
         try:
+            if not args[0].endswith('.csv'):
+                raise FileNotFoundError
             result = f(*args,**kwargs)
         except ValueError:
             print('Tipo de dato invalido')
+            return []
+        except FileNotFoundError:
+            print('Archivo no encontrado')
             return []
         except Exception as e:
             print(f'Error: {e}')
@@ -29,17 +34,14 @@ class Matrix():
             return False
         width = len(matrix)
         length = len(matrix[0])
+        if length - width !=1: 
+            print("Cantidad de filas o de columnas insuficientes.")
+            return False
         zero_row = True
         for row in range(width):
             zero_row = True
             for col in range(length):
                 if matrix [row][col] !=0: zero_row = False
-                if isinstance(matrix[row][col],float):
-                    matrix[row][col] = int(matrix[row][col])
-                    continue
-                if isinstance(matrix[row][col], str):
-                    print('Valor no numérico encontrado')
-                    return False
                 if len(matrix[row]) !=length:
                     print('Matriz incompleta')
                     return False
@@ -89,21 +91,37 @@ class Matrix():
         '''
         return a*b // Matrix.gcd(a,b)
     
+    def soluciones(self) ->None:
+        x_count: int = 1
+        print("Soluciones")
+        for col in range(self.width):
+            print(f'x{x_count} = {self.matrix[col][-1]}')
+            x_count+=1
     @staticmethod
     @matrix_error_handler
     def create_matrix(file_path: str) ->list[list[int]]:
         with open(file_path,mode='r',encoding='utf-8') as f:
             content = list(reader(f,delimiter=';'))
-            content = [list(map(int, row)) for row in content]
+            content = [list(map(float, row)) for row in content]
             return content
         
     def __str__(self) -> str:
-        matrix :str= ''
+        matrix : str = ''
+        max_row_width = max(len(f'{round(self.matrix[row][col], 3)}') for row in range(self.width) for col in range(self.length)) + 2
+        for row in range(self.width):
+            row_str = ''
+            for col in range(self.length):
+                row_str += f'{round(self.matrix[row][col], 3):<{max_row_width}}'
+            matrix += row_str + '\n'
+        return matrix
+    '''
+     matrix :str= ''
         for row in range(self.width):
             for col in range(self.length):
                 matrix+=f'{round(self.matrix[row][col],3)} '
-            matrix +='\n'
+            matrix +='salto de linea aqui'
         return matrix
+    '''
     
 if __name__ == '__main__':
     if len(argv)<2:
@@ -114,4 +132,4 @@ if __name__ == '__main__':
     if not Matrix._valid_matrix(matrix):
         exit(0)
     m = Matrix(matrix)
-    print(m.matrix)
+    print(m)
